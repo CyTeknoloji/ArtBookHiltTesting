@@ -1,7 +1,9 @@
 package com.atilsamancioglu.artbookhilttesting.view
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
@@ -22,21 +24,22 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ArtDetailsFragment @Inject constructor(
         val glide : RequestManager
-) : Fragment(R.layout.fragment_art_details) {
+) : Fragment() {
+    private var _binding : FragmentArtDetailsBinding? = null
+    private val binding get() = _binding!!
 
-    //private val viewModel: ArtViewModel by activityViewModels()
-    lateinit var viewModel : ArtViewModel
-    
-    private var fragmentBinding : FragmentArtDetailsBinding? = null
+    private val viewModel: ArtViewModel by activityViewModels()
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentArtDetailsBinding.inflate(inflater,container,false)
+        val view = binding.root
+        return view
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity()).get(ArtViewModel::class.java)
 
-        val binding = FragmentArtDetailsBinding.bind(view)
-        fragmentBinding = binding
-
-        subscribeToObservers()
+        observeLiveData()
 
         binding.artImageView.setOnClickListener {
             findNavController().navigate(
@@ -63,12 +66,9 @@ class ArtDetailsFragment @Inject constructor(
 
     }
 
-    private fun subscribeToObservers() {
+    private fun observeLiveData() {
         viewModel.selectedImageUrl.observe(viewLifecycleOwner, Observer { url ->
-            println(url)
-            fragmentBinding?.let {
-                glide.load(url).into(it.artImageView)
-            }
+            glide.load(url).into(binding.artImageView)
         })
 
         viewModel.insertArtMessage.observe(viewLifecycleOwner, Observer {
@@ -92,7 +92,7 @@ class ArtDetailsFragment @Inject constructor(
 
     override fun onDestroyView() {
         super.onDestroyView()
-        fragmentBinding = null
+        _binding = null
 
     }
 }

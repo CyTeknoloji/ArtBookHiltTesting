@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.atilsamancioglu.artbookhilttesting.R
+import com.atilsamancioglu.artbookhilttesting.databinding.ImageRowBinding
 import com.bumptech.glide.RequestManager
 import javax.inject.Inject
 
@@ -17,7 +18,7 @@ class ImageRecyclerAdapter @Inject constructor(
 
     private var onItemClickListener : ((String) -> Unit)? = null
 
-    class ImageViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView)
+    class ImageViewHolder(val binding : ImageRowBinding) : RecyclerView.ViewHolder(binding.root)
 
     private val diffUtil = object : DiffUtil.ItemCallback<String>() {
         override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
@@ -37,8 +38,8 @@ class ImageRecyclerAdapter @Inject constructor(
         set(value) = recyclerListDiffer.submitList(value)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.image_row,parent,false)
-        return ImageViewHolder(view)
+        val binding = ImageRowBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        return ImageViewHolder(binding)
     }
 
 
@@ -48,14 +49,10 @@ class ImageRecyclerAdapter @Inject constructor(
 
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        val imageView = holder.itemView.findViewById<ImageView>(R.id.singleArtImageView)
-        val url = images[position]
-        holder.itemView.apply {
-            glide.load(url).into(imageView)
-            setOnClickListener {
-                onItemClickListener?.let {
-                    it(url)
-                }
+        glide.load(images[position]).into(holder.binding.singleArtImageView)
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.let {
+                it(images[position])
             }
         }
     }

@@ -1,7 +1,9 @@
 package com.atilsamancioglu.artbookhilttesting.view
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -28,13 +30,14 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ArtFragment @Inject constructor(
         val artRecyclerAdapter: ArtRecyclerAdapter
-        ) : Fragment(R.layout.fragment_arts) {
+        ) : Fragment() {
 
-    //private val viewModel: ArtViewModel by viewModels()
-    //private val viewModel: ArtViewModel by activityViewModels()
-    lateinit var viewModel : ArtViewModel
+    private var _binding : FragmentArtsBinding? = null
+    private val binding get() = _binding!!
 
-    private var fragmentBinding : FragmentArtsBinding? = null
+    private val viewModel: ArtViewModel by activityViewModels()
+
+
     private val swipeCallBack = object : ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
         override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
             return true
@@ -49,15 +52,17 @@ class ArtFragment @Inject constructor(
 
     }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentArtsBinding.inflate(inflater,container,false)
+        val view = binding.root
+        return view
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity()).get(ArtViewModel::class.java)
 
-        val binding = FragmentArtsBinding.bind(view)
-        fragmentBinding = binding
-
-        subscribeToObservers()
+        observeLiveData()
 
         binding.recyclerViewArt.adapter = artRecyclerAdapter
         binding.recyclerViewArt.layoutManager = LinearLayoutManager(requireContext())
@@ -71,14 +76,14 @@ class ArtFragment @Inject constructor(
 
     }
 
-    private fun subscribeToObservers() {
+    private fun observeLiveData() {
         viewModel.artList.observe(viewLifecycleOwner, Observer {
             artRecyclerAdapter.arts = it
         })
     }
 
     override fun onDestroyView() {
-        fragmentBinding = null
+        _binding = null
         super.onDestroyView()
     }
 
